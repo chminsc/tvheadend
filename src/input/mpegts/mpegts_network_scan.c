@@ -87,7 +87,7 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 {
 
   // 直接返回 0 或者其他适当的值以避免扫描行为
-  tvhinfo("mpegts_network_scan_do_mux. return 0 to disable")
+  tvhinfo(LS_MPEGTS,"mpegts_network_scan_do_mux. return 0 to disable");
   return 0;
   
   int r, state = mm->mm_scan_state;
