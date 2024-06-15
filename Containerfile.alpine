@@ -67,9 +67,15 @@ RUN apk add --no-cache \
         && \
         make DESTDIR='/tvheadend' -j$(($(nproc) - 1)) install
 
+
+
 FROM docker.io/${TARGET_ARCH}/alpine:${ALPINE_VERSION}
 
 LABEL maintainer="Olliver Schinagl <oliver@schinagl.nl>"
+
+RUN wget https://raw.githubusercontent.com/b-jesch/tv_grab_file/master/tv_grab_file -O /usr/bin/tv_grab_file && \
+chmod a+rx /usr/bin/tv_grab_file
+
 
 EXPOSE 9981 \
        9982 \
