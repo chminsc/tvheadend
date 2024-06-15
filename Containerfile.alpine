@@ -83,6 +83,7 @@ EXPOSE 9981 \
        9983
 
 RUN apk add --no-cache \
+        'bash' \
         'avahi' \
         'dbus-libs' \
         'ffmpeg4' \
