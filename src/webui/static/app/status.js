@@ -1,8 +1,7 @@
 /**
  *
  */
-tvheadend.status_subs = function(panel, index)
-{
+tvheadend.status_subs = function (panel, index) {
     var subs = null;
     var store = null;
 
@@ -84,7 +83,7 @@ tvheadend.status_subs = function(panel, index)
                 header: _("ID"),
                 dataIndex: 'id',
                 sortable: true,
-                renderer: function(v) {
+                renderer: function (v) {
                     return ("0000000" + v.toString(16).toUpperCase()).substr(-8);
                 }
 
@@ -144,7 +143,7 @@ tvheadend.status_subs = function(panel, index)
                 header: _("Start"),
                 dataIndex: 'start',
                 sortable: true,
-                renderer: function(v) {
+                renderer: function (v) {
                     var dt = new Date(v);
                     return dt.format('D j M H:i');
                 }
@@ -162,13 +161,13 @@ tvheadend.status_subs = function(panel, index)
                 header: _("PID list"),
                 dataIndex: 'pids',
                 sortable: false,
-                renderer: function(v) {
+                renderer: function (v) {
                     var r = [];
-                    Ext.each(v, function(pid) {
-                      r.push(pid);
+                    Ext.each(v, function (pid) {
+                        r.push(pid);
                     });
                     if (r.length < 1) return "";
-                    r.sort(function(a, b){return a-b});
+                    r.sort(function (a, b) { return a - b });
                     if (r[r.length - 1] == 65535) return _("all");
                     return r.join(',');
                 }
@@ -220,7 +219,7 @@ tvheadend.status_subs = function(panel, index)
                 text: _('Help'),
                 tooltip: _('View help docs.'),
                 iconCls: 'help',
-                handler: function() {
+                handler: function () {
                     new tvheadend.mdhelp('status_subscriptions')
                 }
             }],
@@ -267,8 +266,7 @@ tvheadend.status_subs = function(panel, index)
 /**
  * Streams
  */
-tvheadend.status_streams = function(panel, index)
-{
+tvheadend.status_streams = function (panel, index) {
     var grid = null;
     var store = null;
 
@@ -278,7 +276,7 @@ tvheadend.status_streams = function(panel, index)
             return;
         }
         if (m.update == null)
-           return;
+            return;
         var r = store.getById(m.uuid);
         if (!r) {
             store.reload();
@@ -316,11 +314,11 @@ tvheadend.status_streams = function(panel, index)
                 {
                     iconCls: 'clean',
                     qtip: _('Clear statistics'),
-                    cb: function(grid, rec, act, row) {
+                    cb: function (grid, rec, act, row) {
                         var uuid = grid.getStore().getAt(row).data.uuid;
                         Ext.MessageBox.confirm(_('Clear statistics'),
                             _('Clear statistics for selected input?'),
-                            function(button) {
+                            function (button) {
                                 if (button === 'no')
                                     return;
                                 Ext.Ajax.request({
@@ -328,11 +326,11 @@ tvheadend.status_streams = function(panel, index)
                                     params: { uuid: uuid }
                                 });
                             }
-                       );
-                   }
-               }
+                        );
+                    }
+                }
             ],
-            destroy: function() {
+            destroy: function () {
             }
         });
 
@@ -379,7 +377,7 @@ tvheadend.status_streams = function(panel, index)
 
         function renderBer(value, item, store) {
             if (store.data.tc_bit == 0)
-              return value; // fallback (driver/vendor dependent ber)
+                return value; // fallback (driver/vendor dependent ber)
 
             // ber = error_bit_count / total_bit_count
             var ber = store.data.ec_bit / store.data.tc_bit;
@@ -388,7 +386,7 @@ tvheadend.status_streams = function(panel, index)
 
         function renderPer(value, item, store) {
             if (value == 0) // value: total_block_count
-              return '<span class="tvh-grid-unset">Unknown</span>';
+                return '<span class="tvh-grid-unset">Unknown</span>';
 
             // per = error_block_count / total_block_count
             var per = store.data.ec_block / value;
@@ -427,13 +425,13 @@ tvheadend.status_streams = function(panel, index)
                 header: _("PID list"),
                 dataIndex: 'pids',
                 sortable: false,
-                renderer: function(v) {
+                renderer: function (v) {
                     var r = [];
-                    Ext.each(v, function(pid) {
-                      r.push(pid);
+                    Ext.each(v, function (pid) {
+                        r.push(pid);
                     });
                     if (r.length < 1) return "";
-                    r.sort(function(a, b){return a-b});
+                    r.sort(function (a, b) { return a - b });
                     if (r[r.length - 1] == 65535) return _("all");
                     return r.join(',');
                 }
@@ -494,17 +492,17 @@ tvheadend.status_streams = function(panel, index)
             width: 85,
             colored: true,
             ceiling: 65535,
-            tvh_renderer: function(v, p, record) {
+            tvh_renderer: function (v, p, record) {
                 var scale = record.get('snr_scale');
                 if (scale == 1)
-                  return v;
+                    return v;
                 if (scale == 2 && v > 0) {
-                  var snr = v * 0.001;
-                  return snr.toFixed(1) + " dB";
+                    var snr = v * 0.001;
+                    return snr.toFixed(1) + " dB";
                 }
                 return '<span class="tvh-grid-unset">' + _('Unknown') + '</span>';
             },
-            destroy: function() {
+            destroy: function () {
             }
         }));
 
@@ -514,51 +512,51 @@ tvheadend.status_streams = function(panel, index)
             width: 85,
             colored: true,
             ceiling: 65535,
-            tvh_renderer: function(v, p, record) {
+            tvh_renderer: function (v, p, record) {
                 var scale = record.get('signal_scale');
                 if (scale == 1)
-                  return v;
+                    return v;
                 if (scale == 2) {
                     var snr = v * 0.001;
                     return snr.toFixed(1) + " dBm";
                 }
                 return '<span class="tvh-grid-unset">' + _('Unknown') + '</span>';
             },
-            destroy: function() {
+            destroy: function () {
             }
         }));
 
         grid = new Ext.grid.GridPanel({
             tbar: [
-            {
-                text: _('Clear all statistics'),
-                iconCls: 'clean',
-                handler: function() {
-                    store = tvheadend.streamStatusStore;
-                    if (!store || store == 'undefined') {
-                        return;
-                    }
-                    clearStat = function(record) {
-                        uuid = record.data.uuid;
-                        if (!uuid) {
+                {
+                    text: _('Clear all statistics'),
+                    iconCls: 'clean',
+                    handler: function () {
+                        store = tvheadend.streamStatusStore;
+                        if (!store || store == 'undefined') {
                             return;
                         }
-                        Ext.Ajax.request({
-                            url: 'api/status/inputclrstats',
-                            params: { uuid: uuid }
-                        });
+                        clearStat = function (record) {
+                            uuid = record.data.uuid;
+                            if (!uuid) {
+                                return;
+                            }
+                            Ext.Ajax.request({
+                                url: 'api/status/inputclrstats',
+                                params: { uuid: uuid }
+                            });
+                        }
+                        store.each(clearStat)
                     }
-                    store.each(clearStat)
-                }
-            },
-            '->',{
-                text: _('Help'),
-                tooltip: _('View help docs.'),
-                iconCls: 'help',
-                handler: function() {
-                    new tvheadend.mdhelp('status_stream')
-                }
-            }],
+                },
+                '->', {
+                    text: _('Help'),
+                    tooltip: _('View help docs.'),
+                    iconCls: 'help',
+                    handler: function () {
+                        new tvheadend.mdhelp('status_stream')
+                    }
+                }],
             border: false,
             loadMask: true,
             stripeRows: true,
@@ -603,7 +601,7 @@ tvheadend.status_streams = function(panel, index)
 /**
  *
  */
-tvheadend.status_conns = function(panel, index) {
+tvheadend.status_conns = function (panel, index) {
 
     var grid = null;
     var store = null;
@@ -624,11 +622,11 @@ tvheadend.status_conns = function(panel, index) {
                 {
                     iconCls: 'cancel',
                     qtip: _('Cancel this connection'),
-                    cb: function(grid, rec, act, row) {
+                    cb: function (grid, rec, act, row) {
                         var id = grid.getStore().getAt(row).data.id;
                         Ext.MessageBox.confirm(_('Cancel Connection'),
                             _('Cancel the selected connection?'),
-                            function(button) {
+                            function (button) {
                                 if (button === 'no')
                                     return;
                                 Ext.Ajax.request({
@@ -636,11 +634,11 @@ tvheadend.status_conns = function(panel, index) {
                                     params: { id: id }
                                 });
                             }
-                       );
-                   }
-               }
+                        );
+                    }
+                }
             ],
-            destroy: function() {
+            destroy: function () {
             }
         });
 
@@ -704,7 +702,7 @@ tvheadend.status_conns = function(panel, index) {
                 header: _("Client Data Ports"),
                 dataIndex: 'peer_extra_ports',
                 sortable: false,
-                renderer: function(v) {
+                renderer: function (v) {
                     if (!v) return '';
                     var o = '';
                     if ('tcp' in v)
@@ -756,14 +754,14 @@ tvheadend.status_conns = function(panel, index) {
 
         grid = new Ext.grid.GridPanel({
             tbar: [
-            {
-                text: _('Drop all connections'),
-                tooltip: _('Drop (current) connections to Tvheadend.'),
-                iconCls: 'cancel',
-                handler: function() {
-                    Ext.MessageBox.confirm(_('Drop Connections'),
+                {
+                    text: _('Drop all connections'),
+                    tooltip: _('Drop (current) connections to Tvheadend.'),
+                    iconCls: 'cancel',
+                    handler: function () {
+                        Ext.MessageBox.confirm(_('Drop Connections'),
                             _('Drop all current connections?'),
-                            function(button) {
+                            function (button) {
                                 if (button === 'no')
                                     return;
                                 Ext.Ajax.request({
@@ -771,17 +769,17 @@ tvheadend.status_conns = function(panel, index) {
                                     params: { id: 'all' }
                                 });
                             }
-                    );
-                }
-            },
-            '->', {
-                text: _('Help'),
-                tooltip: _('View help docs.'),
-                iconCls: 'help',
-                handler: function() {
-                    new tvheadend.mdhelp('status_connections')
-                }
-            }],
+                        );
+                    }
+                },
+                '->', {
+                    text: _('Help'),
+                    tooltip: _('View help docs.'),
+                    iconCls: 'help',
+                    handler: function () {
+                        new tvheadend.mdhelp('status_connections')
+                    }
+                }],
             border: false,
             loadMask: true,
             stripeRows: true,
@@ -821,7 +819,7 @@ tvheadend.status_conns = function(panel, index) {
     tvheadend.panelreg(panel, dpanel, builder, destroyer);
 };
 
-tvheadend.status = function() {
+tvheadend.status = function () {
     var panel = new Ext.TabPanel({
         title: _('Status'),
         autoScroll: true,
@@ -837,7 +835,7 @@ tvheadend.status = function() {
 };
 
 
-tvheadend.subscription_bw_monitor = function(id) {
+tvheadend.subscription_bw_monitor = function (id) {
     var inputSeries = new TimeSeries();
     var outputSeries = new TimeSeries();
     var chart = new SmoothieChart({
@@ -889,13 +887,13 @@ tvheadend.subscription_bw_monitor = function(id) {
             listeners: {
                 render: {
                     scope: this,
-                    fn: function(item) {
+                    fn: function (item) {
                         chart.streamTo(item.el.dom, 1000);
                     }
                 },
                 resize: {
                     scope: this,
-                    fn: function(item) {
+                    fn: function (item) {
                         chart.render(item.el.dom, 1000);
                     }
                 }
@@ -905,7 +903,7 @@ tvheadend.subscription_bw_monitor = function(id) {
 
     var task = {
         interval: 1000,
-        run: function() {
+        run: function () {
             var store = tvheadend.subsStore;
             var r = store ? store.getById(id) : null;
             if (!store || typeof r === 'undefined') {
@@ -928,7 +926,7 @@ tvheadend.subscription_bw_monitor = function(id) {
         }
     };
 
-    win.on('close', function() {
+    win.on('close', function () {
         chart.stop();
         Ext.TaskMgr.stop(task);
     });
@@ -939,7 +937,7 @@ tvheadend.subscription_bw_monitor = function(id) {
 };
 
 
-tvheadend.stream_bw_monitor = function(id) {
+tvheadend.stream_bw_monitor = function (id) {
     var inputSeries = new TimeSeries();
     var chart = new SmoothieChart({
         minValue: 0,
@@ -982,13 +980,13 @@ tvheadend.stream_bw_monitor = function(id) {
             listeners: {
                 render: {
                     scope: this,
-                    fn: function(item) {
+                    fn: function (item) {
                         chart.streamTo(item.el.dom, 1000);
                     }
                 },
                 resize: {
                     scope: this,
-                    fn: function(item) {
+                    fn: function (item) {
                         chart.render(item.el.dom, 1000);
                     }
                 }
@@ -996,25 +994,46 @@ tvheadend.stream_bw_monitor = function(id) {
         }
     });
 
+    var zeroBwCounter = 0; // Counter for zero bandwidth readings
+
     var task = {
-        interval: 1000,
-        run: function() {
+        interval: 1000, //run every second
+        run: function () {
             var store = tvheadend.streamStatusStore;
             var r = store ? store.getById(id) : null;
             if (!store || typeof r === 'undefined') {
                 chart.stop();
                 Ext.TaskMgr.stop(task);
+                console.log('Stream or store not found, stopping task.');
                 return;
             }
 
             win.setTitle(r.data.input + ' (' + r.data.stream + ')');
             var input = Math.round(r.data.bps / 1024);
+            // Check for zero bandwidth
+            if (input === 0) {
+                zeroBwCounter++;
+                console.log('Zero bandwidth count: ' + zeroBwCounter);
+            } else {
+                zeroBwCounter = 0; // Reset the counter if bandwidth is not zero
+                console.log('Bandwidth detected, counter reset.');
+            }
+
             inputLbl.setText(_('Input') + ': ' + input + ' kb/s');
             inputSeries.append(new Date().getTime(), input);
+            // If zero bandwidth counter reaches 5, drop all connections
+            if (zeroBwCounter >= 5) {
+                Ext.Ajax.request({
+                    url: 'api/connections/cancel',
+                    params: { id: 'all' }
+                });
+                console.log('Zero bandwidth condition met 5 times, all connections dropped.');
+                zeroBwCounter = 0; // Reset counter after action
+            }
         }
     };
 
-    win.on('close', function() {
+    win.on('close', function () {
         chart.stop();
         Ext.TaskMgr.stop(task);
     });
