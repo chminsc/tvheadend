@@ -88,6 +88,12 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 
   // 直接返回 0 或者其他适当的值以避免扫描行为
   tvhinfo(LS_MPEGTS,"mpegts_network_scan_do_mux. return 0 to disable");
+    // 禁用扫描逻辑
+  mm->mm_scan_state = MM_SCAN_STATE_IDLE;   // 设置扫描状态为完成
+  mm->mm_scan_weight = 0;                   // 重置扫描权重
+  TAILQ_REMOVE(q, mm, mm_scan_link);        // 从队列中移除
+  
+  mpegts_network_scan_notify(mm);           // 通知系统状态更新
   return 0;
   
   int r, state = mm->mm_scan_state;
