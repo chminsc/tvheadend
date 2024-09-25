@@ -87,7 +87,8 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 {
 
   // 直接返回 0 或者其他适当的值以避免扫描行为
-  tvhinfo(LS_MPEGTS,"mpegts_network_scan_do_mux. return 0 to disable");
+    // 输出 Mux 的名称及其他信息到日志
+  tvhinfo(LS_MPEGTS, "Disabled mpegts_network_scan_do_mux: %s", mm->mm_nicename);
     // 禁用扫描逻辑
   mm->mm_scan_state = MM_SCAN_STATE_IDLE;   // 设置扫描状态为完成
   mm->mm_scan_weight = 0;                   // 重置扫描权重
