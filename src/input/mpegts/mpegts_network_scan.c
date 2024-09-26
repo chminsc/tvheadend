@@ -101,62 +101,55 @@ static int
 mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 {
 
-    // 检查 Mux 是否有 Service，如果没有 Service 则进行扫描
-  int service_count = 0;
-  mpegts_service_t *s;
-  LIST_FOREACH(s, &mm->mm_services, s_dvb_mux_link) {
-    service_count++;
-  }
+  // // 如果 Mux 处于活动状态，执行一次扫描
+  // if (mm->mm_scan_state == MM_SCAN_STATE_ACTIVE) {
+  //   tvhinfo(LS_MPEGTS, "Scan for active selected mux: %s, state: %s", 
+  //           mm->mm_nicename, scan_state_to_string(mm->mm_scan_state));
 
-  // 如果 Mux 处于活动状态，执行一次扫描
-  if ( service_count == 0) {
-    tvhinfo(LS_MPEGTS, "Scan for no service mux: %s, state: %s", 
-            mm->mm_nicename, scan_state_to_string(mm->mm_scan_state));
+  //   // 执行原有的扫描逻辑
+  //   int r, state = mm->mm_scan_state;
 
-    // 执行原有的扫描逻辑
-    int r, state = mm->mm_scan_state;
+  //   // 确保状态是有效的
+  //   assert(state == MM_SCAN_STATE_PEND ||
+  //          state == MM_SCAN_STATE_IPEND ||
+  //          state == MM_SCAN_STATE_ACTIVE);
 
-    // 确保状态是有效的
-    assert(state == MM_SCAN_STATE_PEND ||
-           state == MM_SCAN_STATE_IPEND ||
-           state == MM_SCAN_STATE_ACTIVE);
+  //   if (mm->mm_active) return 0;
 
-    if (mm->mm_active) return 0;
+  //   // 订阅 Mux 进行扫描
+  //   r = mpegts_mux_subscribe(mm, NULL, "scan", mm->mm_scan_weight,
+  //                            mm->mm_scan_flags |
+  //                            SUBSCRIPTION_ONESHOT |
+  //                            SUBSCRIPTION_TABLES);
 
-    // 订阅 Mux 进行扫描
-    r = mpegts_mux_subscribe(mm, NULL, "scan", mm->mm_scan_weight,
-                             mm->mm_scan_flags |
-                             SUBSCRIPTION_ONESHOT |
-                             SUBSCRIPTION_TABLES);
+  //   state = mm->mm_scan_state;
+  //   if (!r) {
+  //     // 如果成功订阅，保持活动状态
+  //     assert(state == MM_SCAN_STATE_ACTIVE);
+  //     return 0;
+  //   }
 
-    state = mm->mm_scan_state;
-    if (!r) {
-      // 如果成功订阅，保持活动状态
-      assert(state == MM_SCAN_STATE_ACTIVE);
-      return 0;
-    }
+  //   // 如果扫描失败，处理相应的错误情况
+  //   assert(state == MM_SCAN_STATE_PEND ||
+  //          state == MM_SCAN_STATE_IPEND);
 
-    // 如果扫描失败，处理相应的错误情况
-    assert(state == MM_SCAN_STATE_PEND ||
-           state == MM_SCAN_STATE_IPEND);
+  //   if (r == SM_CODE_NO_FREE_ADAPTER || r == SM_CODE_NO_ADAPTERS)
+  //     return -1;
 
-    if (r == SM_CODE_NO_FREE_ADAPTER || r == SM_CODE_NO_ADAPTERS)
-      return -1;
+  //   if (r == SM_CODE_NO_VALID_ADAPTER && mm->mm_is_enabled(mm))
+  //     return 0;
 
-    if (r == SM_CODE_NO_VALID_ADAPTER && mm->mm_is_enabled(mm))
-      return 0;
-
-    // 从队列中移除失败的 Mux，并更新状态
-    TAILQ_REMOVE(q, mm, mm_scan_link);
-    if (mm->mm_scan_result != MM_SCAN_FAIL) {
-      mm->mm_scan_result = MM_SCAN_FAIL;
-      idnode_changed(&mm->mm_id);
-    }
-    mm->mm_scan_state  = MM_SCAN_STATE_IDLE;
-    mm->mm_scan_weight = 0;
-    mpegts_network_scan_notify(mm);
-    return 0;
-  }
+  //   // 从队列中移除失败的 Mux，并更新状态
+  //   TAILQ_REMOVE(q, mm, mm_scan_link);
+  //   if (mm->mm_scan_result != MM_SCAN_FAIL) {
+  //     mm->mm_scan_result = MM_SCAN_FAIL;
+  //     idnode_changed(&mm->mm_id);
+  //   }
+  //   mm->mm_scan_state  = MM_SCAN_STATE_IDLE;
+  //   mm->mm_scan_weight = 0;
+  //   mpegts_network_scan_notify(mm);
+  //   return 0;
+  // }
 
   // 对于已经扫描过的 Mux，不再重复扫描
   tvhinfo(LS_MPEGTS, "Skip repeated scan for Mux: %s, for state: %s", 
