@@ -87,8 +87,8 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 {
 
   // 如果 Mux 还没有被扫描过，执行一次完整的扫描
-  if (mm->mm_scan_result == MM_SCAN_NONE) {
-    tvhinfo(LS_MPEGTS, "First-time scan for Mux: %s", mm->mm_nicename);
+  if (mm->mm_scan_state == MM_SCAN_STATE_ACTIVE) {
+    tvhinfo(LS_MPEGTS, "Scan for active selected mux: %s", mm->mm_nicename);
 
     // 继续执行原有的扫描逻辑
     int r, state = mm->mm_scan_state;
