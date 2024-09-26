@@ -82,23 +82,37 @@ mpegts_network_scan_queue_del0 ( mpegts_mux_t *mm )
   }
 }
 
+const char *scan_state_to_string(int state) {
+  switch (state) {
+    case MM_SCAN_STATE_IDLE: return "IDLE";
+    case MM_SCAN_STATE_PEND: return "PENDING";
+    case MM_SCAN_STATE_IPEND: return "INTERNAL PENDING";
+    case MM_SCAN_STATE_ACTIVE: return "ACTIVE";
+    default: return "UNKNOWN";
+  }
+}
+
+
 static int
 mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 {
 
-  // 如果 Mux 还没有被扫描过，执行一次完整的扫描
+  // 如果 Mux 处于活动状态，执行一次扫描
   if (mm->mm_scan_state == MM_SCAN_STATE_ACTIVE) {
-    tvhinfo(LS_MPEGTS, "Scan for active selected mux: %s,state: %s", mm->mm_nicename, mm->mm_scan_state);
+    tvhinfo(LS_MPEGTS, "Scan for active selected mux: %s, state: %s", 
+            mm->mm_nicename, scan_state_to_string(mm->mm_scan_state));
 
-    // 继续执行原有的扫描逻辑
+    // 执行原有的扫描逻辑
     int r, state = mm->mm_scan_state;
 
+    // 确保状态是有效的
     assert(state == MM_SCAN_STATE_PEND ||
            state == MM_SCAN_STATE_IPEND ||
            state == MM_SCAN_STATE_ACTIVE);
 
     if (mm->mm_active) return 0;
 
+    // 订阅 Mux 进行扫描
     r = mpegts_mux_subscribe(mm, NULL, "scan", mm->mm_scan_weight,
                              mm->mm_scan_flags |
                              SUBSCRIPTION_ONESHOT |
@@ -106,10 +120,12 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 
     state = mm->mm_scan_state;
     if (!r) {
+      // 如果成功订阅，保持活动状态
       assert(state == MM_SCAN_STATE_ACTIVE);
       return 0;
     }
 
+    // 如果扫描失败，处理相应的错误情况
     assert(state == MM_SCAN_STATE_PEND ||
            state == MM_SCAN_STATE_IPEND);
 
@@ -119,6 +135,7 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
     if (r == SM_CODE_NO_VALID_ADAPTER && mm->mm_is_enabled(mm))
       return 0;
 
+    // 从队列中移除失败的 Mux，并更新状态
     TAILQ_REMOVE(q, mm, mm_scan_link);
     if (mm->mm_scan_result != MM_SCAN_FAIL) {
       mm->mm_scan_result = MM_SCAN_FAIL;
@@ -131,8 +148,10 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
   }
 
   // 对于已经扫描过的 Mux，不再重复扫描
-  tvhinfo(LS_MPEGTS, "Skip repeated scan for Mux: %s, for state: %s", mm->mm_nicename, mm->mm_scan_state);
+  tvhinfo(LS_MPEGTS, "Skip repeated scan for Mux: %s, for state: %s", 
+          mm->mm_nicename, scan_state_to_string(mm->mm_scan_state));
 
+  // 将 Mux 状态设置为 IDLE 并从队列中移除
   mm->mm_scan_state = MM_SCAN_STATE_IDLE;
   mm->mm_scan_weight = 0;
   TAILQ_REMOVE(q, mm, mm_scan_link);
