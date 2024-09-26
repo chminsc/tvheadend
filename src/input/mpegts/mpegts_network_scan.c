@@ -101,9 +101,16 @@ static int
 mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 {
 
+    // 检查 Mux 是否有 Service，如果没有 Service 则进行扫描
+  int service_count = 0;
+  mpegts_service_t *s;
+  LIST_FOREACH(s, &mm->mm_services, s_dvb_mux_link) {
+    service_count++;
+  }
+
   // 如果 Mux 处于活动状态，执行一次扫描
-  if (mm->mm_scan_state == MM_SCAN_STATE_ACTIVE) {
-    tvhinfo(LS_MPEGTS, "Scan for active selected mux: %s, state: %s", 
+  if ( service_count == 0) {
+    tvhinfo(LS_MPEGTS, "Scan for no service mux: %s, state: %s", 
             mm->mm_nicename, scan_state_to_string(mm->mm_scan_state));
 
     // 执行原有的扫描逻辑
