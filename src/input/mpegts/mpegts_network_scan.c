@@ -86,60 +86,58 @@ static int
 mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 {
 
-  // 直接返回 0 或者其他适当的值以避免扫描行为
-    // 输出 Mux 的名称及其他信息到日志
-  tvhinfo(LS_MPEGTS, "Disabled mpegts_network_scan_do_mux: %s", mm->mm_nicename);
-    // 禁用扫描逻辑
-  mm->mm_scan_state = MM_SCAN_STATE_IDLE;   // 设置扫描状态为完成
-  mm->mm_scan_weight = 0;                   // 重置扫描权重
-  TAILQ_REMOVE(q, mm, mm_scan_link);        // 从队列中移除
-  
-  mpegts_network_scan_notify(mm);           // 通知系统状态更新
-  return 0;
-  
-  int r, state = mm->mm_scan_state;
+  // 如果 Mux 还没有被扫描过，执行一次完整的扫描
+  if (mm->mm_scan_result == MM_SCAN_NONE) {
+    tvhinfo(LS_MPEGTS, "First-time scan for Mux: %s", mm->mm_nicename);
 
-  assert(state == MM_SCAN_STATE_PEND ||
-         state == MM_SCAN_STATE_IPEND ||
-         state == MM_SCAN_STATE_ACTIVE);
+    // 继续执行原有的扫描逻辑
+    int r, state = mm->mm_scan_state;
 
-  /* Don't try to subscribe already tuned muxes */
-  if (mm->mm_active) return 0;
+    assert(state == MM_SCAN_STATE_PEND ||
+           state == MM_SCAN_STATE_IPEND ||
+           state == MM_SCAN_STATE_ACTIVE);
 
-  /* Attempt to tune */
-  r = mpegts_mux_subscribe(mm, NULL, "scan", mm->mm_scan_weight,
-                           mm->mm_scan_flags |
-                           SUBSCRIPTION_ONESHOT |
-                           SUBSCRIPTION_TABLES);
+    if (mm->mm_active) return 0;
 
-  /* Started */
-  state = mm->mm_scan_state;
-  if (!r) {
-    assert(state == MM_SCAN_STATE_ACTIVE);
+    r = mpegts_mux_subscribe(mm, NULL, "scan", mm->mm_scan_weight,
+                             mm->mm_scan_flags |
+                             SUBSCRIPTION_ONESHOT |
+                             SUBSCRIPTION_TABLES);
+
+    state = mm->mm_scan_state;
+    if (!r) {
+      assert(state == MM_SCAN_STATE_ACTIVE);
+      return 0;
+    }
+
+    assert(state == MM_SCAN_STATE_PEND ||
+           state == MM_SCAN_STATE_IPEND);
+
+    if (r == SM_CODE_NO_FREE_ADAPTER || r == SM_CODE_NO_ADAPTERS)
+      return -1;
+
+    if (r == SM_CODE_NO_VALID_ADAPTER && mm->mm_is_enabled(mm))
+      return 0;
+
+    TAILQ_REMOVE(q, mm, mm_scan_link);
+    if (mm->mm_scan_result != MM_SCAN_FAIL) {
+      mm->mm_scan_result = MM_SCAN_FAIL;
+      idnode_changed(&mm->mm_id);
+    }
+    mm->mm_scan_state  = MM_SCAN_STATE_IDLE;
+    mm->mm_scan_weight = 0;
+    mpegts_network_scan_notify(mm);
     return 0;
   }
-  assert(state == MM_SCAN_STATE_PEND ||
-         state == MM_SCAN_STATE_IPEND);
 
-  /* No free tuners - stop */
-  if (r == SM_CODE_NO_FREE_ADAPTER || r == SM_CODE_NO_ADAPTERS)
-    return -1;
+  // 对于已经扫描过的 Mux，不再重复扫描
+  tvhinfo(LS_MPEGTS, "Skip repeated scan for Mux: %s", mm->mm_nicename);
 
-  /* No valid tuners (subtly different, might be able to tuner a later
-   * mux)
-   */
-  if (r == SM_CODE_NO_VALID_ADAPTER && mm->mm_is_enabled(mm))
-    return 0;
-
-  /* Failed */
-  TAILQ_REMOVE(q, mm, mm_scan_link);
-  if (mm->mm_scan_result != MM_SCAN_FAIL) {
-    mm->mm_scan_result = MM_SCAN_FAIL;
-    idnode_changed(&mm->mm_id);
-  }
-  mm->mm_scan_state  = MM_SCAN_STATE_IDLE;
+  mm->mm_scan_state = MM_SCAN_STATE_IDLE;
   mm->mm_scan_weight = 0;
+  TAILQ_REMOVE(q, mm, mm_scan_link);
   mpegts_network_scan_notify(mm);
+
   return 0;
 }
 
