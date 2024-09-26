@@ -88,7 +88,7 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
 
   // 如果 Mux 还没有被扫描过，执行一次完整的扫描
   if (mm->mm_scan_state == MM_SCAN_STATE_ACTIVE) {
-    tvhinfo(LS_MPEGTS, "Scan for active selected mux: %s", mm->mm_nicename);
+    tvhinfo(LS_MPEGTS, "Scan for active selected mux: %s,state: %s", mm->mm_nicename, mm->mm_scan_state);
 
     // 继续执行原有的扫描逻辑
     int r, state = mm->mm_scan_state;
@@ -131,7 +131,7 @@ mpegts_network_scan_do_mux ( mpegts_mux_queue_t *q, mpegts_mux_t *mm )
   }
 
   // 对于已经扫描过的 Mux，不再重复扫描
-  tvhinfo(LS_MPEGTS, "Skip repeated scan for Mux: %s", mm->mm_nicename);
+  tvhinfo(LS_MPEGTS, "Skip repeated scan for Mux: %s, for state: %s", mm->mm_nicename, mm->mm_scan_state);
 
   mm->mm_scan_state = MM_SCAN_STATE_IDLE;
   mm->mm_scan_weight = 0;
