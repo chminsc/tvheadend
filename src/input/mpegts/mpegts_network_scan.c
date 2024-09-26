@@ -19,6 +19,19 @@
 
 #include "input.h"
 
+// 在这里添加函数原型声明
+const char *scan_state_to_string(int state);
+
+// 函数实现
+const char *scan_state_to_string(int state) {
+  switch (state) {
+    case MM_SCAN_STATE_IDLE: return "IDLE";
+    case MM_SCAN_STATE_PEND: return "PENDING";
+    case MM_SCAN_STATE_IPEND: return "INTERNAL PENDING";
+    case MM_SCAN_STATE_ACTIVE: return "ACTIVE";
+    default: return "UNKNOWN";
+  }
+}
 /******************************************************************************
  * Timer
  *****************************************************************************/
@@ -82,15 +95,6 @@ mpegts_network_scan_queue_del0 ( mpegts_mux_t *mm )
   }
 }
 
-const char *scan_state_to_string(int state) {
-  switch (state) {
-    case MM_SCAN_STATE_IDLE: return "IDLE";
-    case MM_SCAN_STATE_PEND: return "PENDING";
-    case MM_SCAN_STATE_IPEND: return "INTERNAL PENDING";
-    case MM_SCAN_STATE_ACTIVE: return "ACTIVE";
-    default: return "UNKNOWN";
-  }
-}
 
 
 static int
